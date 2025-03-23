@@ -27,4 +27,5 @@ class Hotels(Base):
     __tablename__ = "hotels"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    
+    name: Mapped[int] = mapped_column(nullable=False)
+    address: Mapped[str] = mapped_column(nullable=False)

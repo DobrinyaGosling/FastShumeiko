@@ -1,0 +1,9 @@
+fastapi[all]
+pydantic
+pydantic[email]
+uvicorn
+pydantic_settings
+alembic
+SQLAlchemy
+passlib[bcrypt]
+loguru

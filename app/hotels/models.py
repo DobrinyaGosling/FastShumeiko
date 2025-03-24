@@ -1,7 +1,7 @@
 from app.database import Base
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy import ForeignKey
-import json
+from sqlalchemy import ForeignKey, JSON
+
 
 
 class Rooms(Base):
@@ -10,7 +10,7 @@ class Rooms(Base):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     hotel_id: Mapped[int] = mapped_column(ForeignKey("hotels.id"), nullable=False)
     price: Mapped[int] = mapped_column(nullable=False)
-    services: Mapped[json] = mapped_column(nullable=False)
+    services: Mapped[dict] = mapped_column(JSON, nullable=False)
     image_id: Mapped[int] = mapped_column(nullable=False)
 
 

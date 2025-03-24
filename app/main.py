@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from app.swagger import router as swagger_router
-from app.routes.hotels import hotels_router
-from app.routes.users import users_router
+from app.hotels.routes import hotels_router
+from app.users.routes import users_router
 
 app = FastAPI(docs_url=None, redoc_url=None)
 

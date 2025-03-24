@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.schemas.hotels import Hotel
+from app.hotels.schemas import Hotel
 
 
 hotels_router = APIRouter(prefix="/hotels", tags=["Hotels"])

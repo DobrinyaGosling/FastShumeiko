@@ -9,6 +9,8 @@ class Rooms(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     hotel_id: Mapped[int] = mapped_column(ForeignKey("hotels.id"), nullable=False)
+    name: Mapped[str] = mapped_column(nullable=False)
+    description: Mapped[str] = mapped_column()
     price: Mapped[int] = mapped_column(nullable=False)
     services: Mapped[dict] = mapped_column(JSON, nullable=False)
     image_id: Mapped[int] = mapped_column(nullable=False)
@@ -19,5 +21,7 @@ class Hotels(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     name: Mapped[int] = mapped_column(nullable=False)
-    address: Mapped[str] = mapped_column(nullable=False)
-    stars: Mapped[int] = mapped_column(nullable=False)
+    location: Mapped[str] = mapped_column(nullable=False)
+    services: Mapped[dict] = mapped_column(JSON)
+    rooms_quantity: Mapped[int] = mapped_column(nullable=False)
+    image_id: Mapped[int] = mapped_column()

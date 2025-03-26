@@ -2,16 +2,17 @@ from pydantic import BaseModel, EmailStr, Field, model_validator, ConfigDict, fi
 from typing import Self
 from app.auth.utils import get_hash_password
 
-class Email(BaseModel):
+
+class EmailSchema(BaseModel):
     email: EmailStr
     model_config = ConfigDict()
 
 
-class User(Email):
+class UsersSchema(EmailSchema):
     password: str = Field(min_length=4, max_length=100)
 
 
-class UserRegistration(Email):
+class UserRegistrationSchema(EmailSchema):
     password: str = Field(min_length=4, max_length=100)
     again_password: str = Field(min_length=4, max_length=100)
 
@@ -24,6 +25,10 @@ class UserRegistration(Email):
 
         return self
 
-class Id(BaseModel):
+class IdSchema(BaseModel):
     id: int
+
+
+
+
 

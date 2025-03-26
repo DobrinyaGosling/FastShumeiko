@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Response, HTTPException, status
 
 from app.auth.utils import verify_password, set_tokens
-from app.users.schemas import UserRegistration, User, Email as EmailSchema
+from app.users.schemas import UserRegistrationSchema, UsersSchema, EmailSchema as EmailSchema
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_session_with_commit, get_session_without_commit
 from app.DAO.dao import UsersDAO
@@ -13,7 +13,7 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
 
 @router.post("/registration")
 async def registration(
-        user: UserRegistration,
+        user: UserRegistrationSchema,
         session: AsyncSession = Depends(get_session_with_commit)
         ):
 
@@ -28,7 +28,7 @@ async def registration(
 
 @router.post("/login")
 async def login(
-    user: User,
+    user: UsersSchema,
     response: Response,
     session: AsyncSession = Depends(get_session_without_commit)
     ):

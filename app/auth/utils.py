@@ -35,13 +35,13 @@ def create_tokens(data: dict) -> dict:
 
 
 
-def set_tokens(response: Response, user_id: int):
-    new_tokens = create_tokens({"sub": str(user_id)})
+def set_tokens(response: Response, user_id: int, role: str):
+    new_tokens = create_tokens({"sub": str(user_id), "role": f"{role}"})
     access_token = new_tokens.get("access_token")
     refresh_token = new_tokens.get("refresh_token")
 
     response.set_cookie(
-        key="user_access_token",
+        key="access_token",
         value=access_token,
         httponly=True,
         secure=True,
@@ -49,7 +49,7 @@ def set_tokens(response: Response, user_id: int):
     )
 
     response.set_cookie(
-            key="user_refresh_token",
+            key="refresh_token",
             value=refresh_token,
             httponly=True,
             secure=True,
@@ -59,7 +59,7 @@ def set_tokens(response: Response, user_id: int):
 def get_access_token(
         request: Request
 ):
-    access_token = request.cookies.get("user_access_token")
+    access_token = request.cookies.get("access_token")
     if not access_token:
         raise HTTPException(status_code=404, detail="access token not found")
     return access_token
@@ -68,13 +68,13 @@ def get_access_token(
 def get_refresh_token(
         request: Request
 ):
-    refresh_token = request.cookies.get("user_refresh_token")
+    refresh_token = request.cookies.get("refresh_token")
     if not refresh_token:
         raise HTTPException(status_code=404, detail="Refresh token not found")
     return refresh_token
 
 
-async def get_id_by_refresh_token(
+async def get_user_id_by_refresh_token(
         token: str = Depends(get_refresh_token)
 ) -> int:
 
@@ -86,6 +86,10 @@ async def get_id_by_refresh_token(
         )
     except JWTError:
         raise HTTPException(status_code=499, detail="Token not valid")
+
+    role = payload.get("role")
+    if not role or role != "user":
+        raise HTTPException(status_code=401, detail="Token not belongs user")
 
     expire = payload["exp"]
     if not expire:
@@ -102,7 +106,38 @@ async def get_id_by_refresh_token(
     return user_id
 
 
-async def get_id_by_access_token(
+async def get_lord_id_by_refresh_token(
+        token: str = Depends(get_refresh_token)
+) -> int:
+    try:
+        payload = jwt.decode(
+            token=token,
+            key=settings.SECRET_KEY,
+            algorithms=[settings.ALGORITHM]
+        )
+    except JWTError:
+        raise HTTPException(status_code=499, detail="Token not valid")
+
+    role = payload.get("role")
+    if not role or role != "lord":
+        raise HTTPException(status_code=401, detail="Token not belongs lord")
+
+    expire = payload["exp"]
+    if not expire:
+        raise HTTPException(status_code=400, detail="Token not valid")
+
+    expire_time = datetime.fromtimestamp(int(expire), tz=timezone.utc)
+    if expire_time < datetime.now(timezone.utc):
+        raise HTTPException(status_code=400, detail="Token expired")
+
+    lord_id = int(payload["sub"])
+    if not lord_id:
+        raise HTTPException(status_code=404, detail="Token not valid")
+
+    return lord_id
+
+
+async def get_lord_id_by_access_token(
         access_token: str = Depends(get_access_token)
 ) -> int:
     try:
@@ -115,6 +150,42 @@ async def get_id_by_access_token(
     except JWTError:
         raise HTTPException(status_code=400, detail="Token not valid")
 
+    role = payload.get("role")
+    if not role or role != "lord":
+        raise HTTPException(status_code=401, detail="Token not belongs lord")
+        # Проверяем срок действия токена
+    expire = payload.get("exp")
+    if not expire:
+        raise HTTPException(status_code=400, detail="Token not valid")
+
+    expire_time = datetime.fromtimestamp(int(expire), tz=timezone.utc)
+    if expire_time < datetime.now(timezone.utc):
+        raise HTTPException(status_code=400, detail="Token expired")
+
+    # Извлекаем user_id из токена
+    lord_id = int(payload.get("sub"))
+    if not lord_id:
+        raise HTTPException(status_code=404, detail="Token not valid")
+
+    return lord_id
+
+
+async def get_user_id_by_access_token(
+        access_token: str = Depends(get_access_token)
+) -> int:
+    try:
+        # Декодируем токен
+        payload = jwt.decode(
+            token=access_token,
+            key=settings.SECRET_KEY,
+            algorithms=settings.ALGORITHM
+        )
+    except JWTError:
+        raise HTTPException(status_code=400, detail="Token not valid")
+
+    role = payload.get("role")
+    if not role or role != "user":
+        raise HTTPException(status_code=401, detail="Token not belongs user")
         # Проверяем срок действия токена
     expire = payload.get("exp")
     if not expire:

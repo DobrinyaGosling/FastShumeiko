@@ -25,9 +25,7 @@ class Hotels(Base):
     name: Mapped[str] = mapped_column(nullable=False)
     location: Mapped[str] = mapped_column(nullable=False)
     services: Mapped[dict] = mapped_column(JSON)
-    rooms_quantity: Mapped[int] = mapped_column(nullable=False)
     image_id: Mapped[int] = mapped_column()
-
     rooms: Mapped[list["Rooms"]] = relationship(back_populates="hotel", uselist=True, lazy="selectin")
     landlord: Mapped["Landlords"] = relationship(back_populates="hotel", uselist=False, lazy="selectin")
 
@@ -38,6 +36,7 @@ class Landlords(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     email: Mapped[str] = mapped_column(unique=True, nullable=False)
+    password: Mapped[str] = mapped_column(nullable=False)
 
-    hotels_id: Mapped[int] = mapped_column(ForeignKey("hotels.id"))
+    hotels_id: Mapped[int] = mapped_column(ForeignKey("hotels.id"), nullable=False)
     hotel: Mapped["Hotels"] = relationship(back_populates="landlord", uselist=False, lazy="selectin")

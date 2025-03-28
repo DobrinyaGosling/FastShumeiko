@@ -24,7 +24,7 @@ async def get_me(
 
 
 
-@router.patch("/me")
+@router.put("/me")
 async def update_me(
         mail: EmailSchema,
         user_id: int = Depends(get_user_id_by_access_token),

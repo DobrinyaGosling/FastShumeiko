@@ -16,7 +16,7 @@ class HotelsDAO(BaseDAO):
 
 
 class RoomsDAO(BaseDAO):
-    models = Rooms
+    model = Rooms
 
 
 class LandLordsDAO(BaseDAO):

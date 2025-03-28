@@ -153,6 +153,7 @@ async def get_lord_id_by_access_token(
     role = payload.get("role")
     if not role or role != "lord":
         raise HTTPException(status_code=401, detail="Token not belongs lord")
+
         # Проверяем срок действия токена
     expire = payload.get("exp")
     if not expire:

@@ -4,10 +4,30 @@ from app.auth.utils import get_hash_password
 
 
 class RoomsSchema(BaseModel):
-    name: str = Field(ge=2, le=30)
+    name: str = Field(min_length=1, max_length=100)
     description: str
     price: int
     services: dict
+    image_id: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+class AddRoomsSchema(BaseModel):
+    name: str = Field(min_length=1, max_length=100)
+    description: str
+    price: int
+    services: dict
+    image_id: int
+    hotel_id: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class UpdateRoomsSchema(BaseModel):
+    description: str
+    price: int
+    services: dict
+    image_id: int
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -17,12 +37,26 @@ class HotelsSchema(BaseModel):
     location: str
     services: dict
     image_id: int
-
+    rooms_quantity: int
 
     model_config = ConfigDict(from_attributes=True)
 
-class HotelsNameSchema(BaseModel):
+
+
+class UpdateHotelsSchema(BaseModel):
+    services: dict
+    rooms_quantity: int
+    image_id: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class StrSchema(BaseModel):
     name: str
+
+class IntIntSchema(BaseModel):
+    id: int
+    hotel_id: int
 
 
 class LandLordsSchema(BaseModel):

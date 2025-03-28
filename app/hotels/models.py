@@ -26,6 +26,7 @@ class Hotels(Base):
     location: Mapped[str] = mapped_column(nullable=False)
     services: Mapped[dict] = mapped_column(JSON)
     image_id: Mapped[int] = mapped_column()
+    rooms_quantity: Mapped[int] = mapped_column(nullable=False)
     rooms: Mapped[list["Rooms"]] = relationship(back_populates="hotel", uselist=True, lazy="selectin")
     landlord: Mapped["Landlords"] = relationship(back_populates="hotel", uselist=False, lazy="selectin")
 

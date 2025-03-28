@@ -7,14 +7,17 @@ from app.database import get_session_with_commit, get_session_without_commit
 from app.DAO.dao import UsersDAO, LandLordsDAO, HotelsDAO
 from app.auth.utils import get_user_id_by_refresh_token, get_lord_id_by_refresh_token
 from app.hotels.schemas import (LandlordsRegistrationSchema,
-                                HotelsSchema, HotelsNameSchema,
+                                HotelsSchema, StrSchema,
                                 LandLordsAddSchema, LandLordsSchema)
 
 
-router = APIRouter(prefix="/auth", tags=["Auth"])
+router = APIRouter(prefix="/users/auth", tags=["User Auth"])
+router2 = APIRouter(prefix="/lords/auth", tags=["Lord Auth"])
 
-@router.post("/user_registration")
-async def registration(
+#------------------REGISTRATION---------------------------------------------------------------------------------
+
+@router.post("/registration")
+async def user_registration(
         user: UserRegistrationSchema,
         session: AsyncSession = Depends(get_session_with_commit)
         ):
@@ -28,8 +31,8 @@ async def registration(
     return {"message": "User successfully added"}
 
 
-@router.post("/lord_registration")
-async def registration(
+@router2.post("/registration")
+async def lord_registration(
         lord: LandlordsRegistrationSchema,
         session: AsyncSession = Depends(get_session_with_commit),
 ):
@@ -40,7 +43,7 @@ async def registration(
     if existed_lord:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Land Lord already exist")
 
-    existed_hotel = await hotel_dao.find_one_or_none(filters=HotelsNameSchema(name=lord.hotel.name))
+    existed_hotel = await hotel_dao.find_one_or_none(filters=StrSchema(name=lord.hotel.name))
     if existed_hotel:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Hotel already exist")
 
@@ -49,7 +52,8 @@ async def registration(
         name=lord.hotel.name,
         location=lord.hotel.location,
         services=lord.hotel.services,
-        image_id=lord.hotel.image_id
+        image_id=lord.hotel.image_id,
+        rooms_quantity=lord.hotel.rooms_quantity
     ))
     await session.flush()
 
@@ -57,22 +61,15 @@ async def registration(
     return {"message": "U are successfully added Lord ad Hotel"}
 
 
+#-------------------LOGIN-------------------------------------------------------------------------------------------
 
-@router.post("/logout")
-async def logout(response: Response):
-    response.delete_cookie("user_access_token")
-    response.delete_cookie("user_refresh_token")
-    return {"message": "U are successfully logout"}
-
-
-
-@router.post("/lord_login")
+@router2.post("/login")
 async def lord_login(
     lord: LandLordsSchema,
     response: Response,
     session: AsyncSession = Depends(get_session_without_commit)
 ):
-    await logout(response)
+
     lord_dao = LandLordsDAO(session)
     existed_lord = await lord_dao.find_one_or_none(filters=EmailSchema(email=lord.email))
     if not existed_lord or verify_password(lord.password, existed_lord.password) is False:
@@ -82,8 +79,8 @@ async def lord_login(
     return {"message": "Successfully logged in:)"}
 
 
-@router.post("/user_login")
-async def login(
+@router.post("/login")
+async def user_login(
     user: UsersSchema,
     response: Response,
     session: AsyncSession = Depends(get_session_without_commit)
@@ -97,11 +94,10 @@ async def login(
     return {"U are successfully install tokens!!"}
 
 
-
-
+#---------------REFRESH---------------------------------------------------------------------------------------
 
 @router.post("/refresh")
-async def refresh(
+async def refresh_user_tokens(
         response: Response,
         session: AsyncSession = Depends(get_session_with_commit),
         user_id: int = Depends(get_user_id_by_refresh_token)
@@ -112,3 +108,27 @@ async def refresh(
         raise HTTPException(status_code=404, detail="User not found")
     set_tokens(response=response, user_id=user_id, role="user")
     return {"message": "U are successfully set tokens"}
+
+
+@router2.post("/refresh")
+async def refresh_lord_tokens(
+        response: Response,
+        session: AsyncSession = Depends(get_session_with_commit),
+        lord_id: int = Depends(get_lord_id_by_refresh_token)
+):
+    lord_dao = LandLordsDAO(session)
+    existed_lord = await lord_dao.find_one_or_none_by_id(data_id=lord_id)
+    if not existed_lord:
+        raise HTTPException(status_code=404, detail="Lord not found")
+    set_tokens(response=response, user_id=lord_id, role="lord")
+    return {"message": "U are successfully set tokens"}
+
+
+#---------------LOGOUT------------------------------------------------------------------------------------------
+
+@router.post("/logout")
+async def logout(response: Response):
+    response.delete_cookie("access_token")
+    response.delete_cookie("refresh_token")
+    return {"message": "U are successfully logout"}
+

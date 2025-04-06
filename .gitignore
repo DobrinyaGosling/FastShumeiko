@@ -1,3 +1,4 @@
 .env
 dockcer-compose.yaml
 alembic.ini
+redisdata/

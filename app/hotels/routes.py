@@ -106,11 +106,11 @@ async def update_room(
 
 @router2.delete("/rooms")
 async def delete_room(
-    room_name: str,
+    room_id: int,
     session: AsyncSession = Depends(get_session_with_commit),
     lord = Depends(get_existed_lord_by_access_token)
 ):
-    deleted_room = await RoomsDAO(session).delete(filters=StrSchema(name=room_name))
+    deleted_room = await RoomsDAO(session).delete(filters=IdSchema(id=room_id))
     if not deleted_room:
         raise HTTPException(status_code=403, detail="It's not ur room bro:)")
     return {"message": "U are successfully deleted room:)"}

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, Response, HTTPException, status
 
-from app.auth.utils import verify_password, set_tokens
+from app.auth.utils import verify_password, set_tokens, get_access_token
 from app.users.schemas import UserRegistrationSchema, UsersSchema, EmailSchema as EmailSchema
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_session_with_commit, get_session_without_commit
@@ -9,18 +9,41 @@ from app.auth.utils import get_user_id_by_refresh_token, get_lord_id_by_refresh_
 from app.hotels.schemas import (LandlordsRegistrationSchema,
                                 HotelsSchema, StrSchema,
                                 LandLordsAddSchema, LandLordsSchema)
-
+from jose import jwt, JWTError
+from app.config import settings
 
 router = APIRouter(prefix="/users/auth", tags=["User Auth"])
 router2 = APIRouter(prefix="/lords/auth", tags=["Lord Auth"])
+router3 = APIRouter(prefix="/utils", tags=["Utils"])
+
+@router3.post("/role")
+def get_role(
+    access_token = Depends(get_access_token)
+):
+    try:
+        # Декодируем токен
+        payload = jwt.decode(
+            token=access_token,
+            key=settings.SECRET_KEY,
+            algorithms=settings.ALGORITHM
+        )
+    except JWTError:
+        raise HTTPException(status_code=400, detail="Token not valid")
+
+    role = payload.get("role")
+    if role == "user":
+        return {"role": "user"}
+    elif role == "lord":
+        return {"role": "lord"}
 
 #------------------REGISTRATION---------------------------------------------------------------------------------
 
 @router.post("/registration")
 async def user_registration(
-        user: UserRegistrationSchema,
-        session: AsyncSession = Depends(get_session_with_commit)
-        ):
+    response: Response,
+    user: UserRegistrationSchema,
+    session: AsyncSession = Depends(get_session_with_commit),
+    ):
 
     user_dao = UsersDAO(session=session)
     existed_user = await user_dao.find_one_or_none(filters=EmailSchema(email=user.email))
@@ -28,11 +51,16 @@ async def user_registration(
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="User already exist")
 
     await user_dao.add(values=user)
+    await session.flush()
+
+    existed_user = await UsersDAO(session).find_one_or_none(filters=EmailSchema(email=user.email))
+    set_tokens(response, existed_user.id, role="user")
     return {"message": "User successfully added"}
 
 
 @router2.post("/registration")
 async def lord_registration(
+        response: Response,
         lord: LandlordsRegistrationSchema,
         session: AsyncSession = Depends(get_session_with_commit),
 ):
@@ -58,6 +86,9 @@ async def lord_registration(
     await session.flush()
 
     await lord_dao.add(values=LandLordsAddSchema(email=lord.email, password=lord.password, hotels_id=hotel.id))
+    await session.flush()
+    existed_lord= await LandLordsDAO(session).find_one_or_none(filters=EmailSchema(email=lord.email))
+    set_tokens(response, existed_lord.id, role="lord")
     return {"message": "U are successfully added Lord ad Hotel"}
 
 

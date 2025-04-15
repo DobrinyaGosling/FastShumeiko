@@ -1,11 +1,14 @@
+from datetime import date
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.database import get_session_with_commit, get_session_without_commit
-from app.bookings.shemas import CreateBookingsSchema, GetBookingsSchema, UpdateBookingsSchema
+
+from app.bookings.shemas import (CreateBookingsSchema, GetBookingsSchema,
+                                 UpdateBookingsSchema)
 from app.DAO.dao import BookingsDAO, RoomsDAO
-from app.users.utils import get_existed_user_by_access_token
-from datetime import date
+from app.database import get_session_with_commit, get_session_without_commit
 from app.users.schemas import IdSchema
+from app.users.utils import get_existed_user_by_access_token
 
 router = APIRouter(prefix="/bookings", tags=["Bookings"])
 

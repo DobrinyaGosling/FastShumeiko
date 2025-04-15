@@ -1,16 +1,20 @@
-from fastapi import APIRouter, Depends, Response, HTTPException, status
-
-from app.auth.utils import verify_password, set_tokens, get_access_token
-from app.users.schemas import UserRegistrationSchema, UsersSchema, EmailSchema as EmailSchema
+from fastapi import (APIRouter, Depends, HTTPException, Response, UploadFile,
+                     status)
+from jose import JWTError, jwt
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.database import get_session_with_commit, get_session_without_commit
-from app.DAO.dao import UsersDAO, LandLordsDAO, HotelsDAO
-from app.auth.utils import get_user_id_by_refresh_token, get_lord_id_by_refresh_token
-from app.hotels.schemas import (LandlordsRegistrationSchema,
-                                HotelsSchema, StrSchema,
-                                LandLordsAddSchema, LandLordsSchema)
-from jose import jwt, JWTError
+
+from app.auth.utils import (get_access_token, get_lord_id_by_refresh_token,
+                            get_user_id_by_refresh_token, set_tokens,
+                            verify_password)
 from app.config import settings
+from app.DAO.dao import HotelsDAO, LandLordsDAO, UsersDAO
+from app.database import get_session_with_commit, get_session_without_commit
+from app.hotels.schemas import (HotelsSchema, LandLordsAddSchema,
+                                LandlordsRegistrationSchema, LandLordsSchema,
+                                StrSchema)
+from app.users.schemas import EmailSchema as EmailSchema
+from app.users.schemas import UserRegistrationSchema, UsersSchema
+from fastapi import UploadFile, Form
 
 router = APIRouter(prefix="/users/auth", tags=["User Auth"])
 router2 = APIRouter(prefix="/lords/auth", tags=["Lord Auth"])
@@ -58,10 +62,24 @@ async def user_registration(
     return {"message": "User successfully added"}
 
 
+"""
+@router.post("/upload_file")
+async def upload_file(file: UploadFile):
+    try:
+        file_content = await file.read()
+
+    max_file_size = 5 * 1024 * 1024  # 5 МБ в байтах
+    if len(file_content) > max_file_size:
+        raise HTTPException(status_code=413, detail="Превышен максимальный размер файла (5 МБ).")
+
+    upload_dir = settings
+"""
+
 @router2.post("/registration")
 async def lord_registration(
         response: Response,
         lord: LandlordsRegistrationSchema,
+        image: list[UploadFile],
         session: AsyncSession = Depends(get_session_with_commit),
 ):
     lord_dao = LandLordsDAO(session)
@@ -90,6 +108,16 @@ async def lord_registration(
     existed_lord= await LandLordsDAO(session).find_one_or_none(filters=EmailSchema(email=lord.email))
     set_tokens(response, existed_lord.id, role="lord")
     return {"message": "U are successfully added Lord ad Hotel"}
+
+
+
+
+
+
+
+
+
+
 
 
 #-------------------LOGIN-------------------------------------------------------------------------------------------

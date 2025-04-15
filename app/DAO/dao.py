@@ -1,7 +1,9 @@
-from .base import BaseDAO
-from app.users.models import Users
 from app.bookings.models import Bookings
-from app.hotels.models import Hotels, Rooms, Landlords
+from app.hotels.models import Hotels, Landlords, Rooms
+from app.users.models import Users
+
+from .base import BaseDAO
+
 
 class UsersDAO(BaseDAO):
     model = Users

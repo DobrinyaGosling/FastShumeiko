@@ -1,15 +1,21 @@
+import string
+from datetime import datetime, timedelta, timezone
+from random import choices
 
-from passlib.context import CryptContext
-from fastapi import HTTPException, Depends
+from fastapi import Depends, HTTPException
 from fastapi.requests import Request
 from fastapi.responses import Response
-from datetime import datetime, timedelta, timezone
-from jose import jwt, JWTError
+from jose import JWTError, jwt
+from passlib.context import CryptContext
+
 from app.config import settings
 
 
-def create_tokens(data: dict) -> dict:
+def generate_random_string(length: int) -> str:
+    return ''.join(choices(string.ascii_letters, k=length))
 
+
+def create_tokens(data: dict) -> dict:
     now = datetime.now(timezone.utc)
 
     access_expire = now + timedelta(minutes=30)
@@ -34,7 +40,6 @@ def create_tokens(data: dict) -> dict:
     return {"access_token": access_token, "refresh_token": refresh_token}
 
 
-
 def set_tokens(response: Response, user_id: int, role: str):
     new_tokens = create_tokens({"sub": str(user_id), "role": f"{role}"})
     access_token = new_tokens.get("access_token")
@@ -49,12 +54,13 @@ def set_tokens(response: Response, user_id: int, role: str):
     )
 
     response.set_cookie(
-            key="refresh_token",
-            value=refresh_token,
-            httponly=True,
-            secure=False,
-            samesite="lax"
-        )
+        key="refresh_token",
+        value=refresh_token,
+        httponly=True,
+        secure=False,
+        samesite="lax"
+    )
+
 
 def get_access_token(
         request: Request
@@ -77,7 +83,6 @@ def get_refresh_token(
 async def get_user_id_by_refresh_token(
         token: str = Depends(get_refresh_token)
 ) -> int:
-
     try:
         payload = jwt.decode(
             token=token,
@@ -206,9 +211,10 @@ async def get_user_id_by_access_token(
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+
 def get_hash_password(password: str) -> str:
     return pwd_context.hash(password)
 
+
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
-

@@ -1,12 +1,11 @@
 
-from fastapi import Depends, APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.database import get_session_with_commit, get_session_without_commit
+
 from app.auth.utils import get_user_id_by_access_token
 from app.DAO.dao import UsersDAO
+from app.database import get_session_with_commit, get_session_without_commit
 from app.users.schemas import EmailSchema, IdSchema
-
-
 
 router = APIRouter(prefix="/users", tags=["Users"])
 

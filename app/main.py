@@ -1,13 +1,15 @@
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.swagger import router as swagger_router
-from app.hotels.routes import router as hotels_router, router2 as hotels_lord_router
-from app.users.routes import router as users_router
+
+from app.auth.routes import router as auth_router
+from app.auth.routes import router2 as auth_lord_router
+from app.auth.routes import router3 as utils_router
 from app.bookings.routes import router as bookings_router
-from app.auth.routes import router as auth_router, router2 as auth_lord_router, router3 as utils_router
-
-
+from app.hotels.routes import router as hotels_router
+from app.hotels.routes import router2 as hotels_lord_router
+from app.swagger import router as swagger_router
+from app.users.routes import router as users_router
 
 app = FastAPI(docs_url=None, redoc_url=None)
 

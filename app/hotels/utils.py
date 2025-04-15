@@ -1,7 +1,8 @@
+from fastapi import Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.DAO.dao import LandLordsDAO
-from fastapi import HTTPException, Depends
+
 from app.auth.utils import get_lord_id_by_access_token
+from app.DAO.dao import LandLordsDAO
 from app.database import get_session_without_commit
 
 

@@ -1,6 +1,7 @@
-from app.database import Base
+from sqlalchemy import JSON, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import ForeignKey, JSON
+
+from app.database import Base
 
 
 class Rooms(Base):
@@ -29,6 +30,15 @@ class Hotels(Base):
     rooms_quantity: Mapped[int] = mapped_column(nullable=False)
     rooms: Mapped[list["Rooms"]] = relationship(back_populates="hotel", uselist=True, lazy="selectin")
     landlord: Mapped["Landlords"] = relationship(back_populates="hotel", uselist=False, lazy="selectin")
+
+    def to_dict(self):
+        return {
+            "name": self.name,
+            "location": self.location,
+            "services": self.services,
+            "image_id": self.image_id,
+            "rooms_quantity": self.rooms_quantity
+        }
 
 
 

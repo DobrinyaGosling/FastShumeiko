@@ -38,7 +38,7 @@ origins = [
 # Полная настройка CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,          # Для работы с куками
     allow_methods=["*"],
     allow_headers=[

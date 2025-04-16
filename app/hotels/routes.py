@@ -4,10 +4,10 @@ from asyncpg.pgproto.pgproto import timedelta
 from fastapi import APIRouter, Depends, HTTPException
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
-
+from app.config import redis_client
 from app.auth.utils import (get_lord_id_by_access_token,
                             get_user_id_by_access_token)
-from app.config import redis_client
+# from app.config import redis_client
 from app.DAO.dao import HotelsDAO, LandLordsDAO, RoomsDAO
 from app.database import get_session_with_commit, get_session_without_commit
 from app.hotels.schemas import (AddRoomsSchema, HotelsSchema, IntIntSchema,
@@ -21,6 +21,7 @@ router2 = APIRouter(prefix="/lords/hotels", tags=["lords Hotel and Rooms"])
 
 
 # ------------------HOTELS----------------------------------------------------------------
+
 @router2.get("/")
 async def get_my_hotel(
         session: AsyncSession = Depends(get_session_without_commit),

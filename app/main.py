@@ -31,8 +31,8 @@ app.include_router(utils_router)
 
 # Список разрешенных источников
 origins = [
-    "http://localhost:5500",  # React/Vue dev server
-    "http://localhost:3000"  # React/Vue dev server
+    "http://0.0.0.0:5500",  # React/Vue dev server
+    "http://0.0.0.0:3000"  # React/Vue dev server
 ]
 
 # Полная настройка CORS

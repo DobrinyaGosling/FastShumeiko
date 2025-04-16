@@ -38,26 +38,9 @@ origins = [
 # Полная настройка CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,          # Для работы с куками
+    allow_origins=["http://localhost:3000", "http://0.0.0.0:5500"],  # Явно укажите фронтенд
+    allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=[
-        "Authorization",
-        "Content-Type",
-        "Accept",
-        "Origin",
-        "X-Requested-With",
-        "X-CSRF-Token",
-        "Access-Control-Request-Headers",
-        "Access-Control-Request-Method",
-        "Set-Cookie",
-        "Cookie"
-    ],
-    expose_headers=[
-        "Content-Disposition",       # Для файловых загрузок
-        "Set-Cookie",
-        "Access-Control-Allow-Origin",
-        "Access-Control-Allow-Credentials"
-    ],
-    max_age=600                      # Кеширование CORS preflight (в секундах)
+    allow_headers=["*"],
+    expose_headers=["*"]
 )

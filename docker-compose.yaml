@@ -1,40 +1,29 @@
-version: '3.9'
-
 services:
   db:
     image: postgres:16
-    restart: always
-    shm_size: 128mb
-    ports:
-      - '5432:5432'
-    environment:
-      - POSTGRES_PASSWORD=${DB_PASS}
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_DB=${DB_NAME}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U depich -d fastshumeiko"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
+    container_name: booking_db
+    env_file:
+      - .env_not_dev
 
-  redis: # <-- Новый сервис Redis
+  redis:
     image: redis:7-alpine
-    restart: always
-    ports:
-      - '6379:6379'
+    container_name: booking_cache
+    env_file:
+      - .env_not_dev
     environment:
-      - REDIS_PASSWORD=${REDIS_PASSWORD}
-    volumes:
-      - ./redis_data:/data:Z
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
     command: redis-server --requirepass ${REDIS_PASSWORD}
-    healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
-      interval: 5s
-      timeout: 3s
-      retries: 5
 
-volumes:
-  postgres_data:
-  redis_data:
+  booking:
+    build:
+      context: .
+    container_name: booking_app
+    env_file:
+      - .env_not_dev
+    depends_on:
+      - db
+      - redis
+    command: ["/booking/docker/app.sh"]
+    ports:
+      - 1488:8000
+

@@ -1,7 +1,6 @@
 import os
 
 import redis
-from celery import Celery
 from dotenv import load_dotenv
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -39,8 +38,3 @@ settings = Settings()
 
 redis_client = redis.from_url(settings.get_redis_cache_url(), decode_responses=True)
 
-celery_app = Celery(
-    "celery_worker",
-    broker=settings.get_redis_broker_url(),
-    backend=settings.get_redis_back_url()
-)

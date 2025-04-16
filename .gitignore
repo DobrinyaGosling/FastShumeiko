@@ -1,4 +1,2 @@
 .env
-dockcer-compose.yaml
-alembic.ini
-redisdata/
+.env_not_dev

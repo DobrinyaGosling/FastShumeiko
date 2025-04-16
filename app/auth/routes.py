@@ -79,7 +79,6 @@ async def upload_file(file: UploadFile):
 async def lord_registration(
         response: Response,
         lord: LandlordsRegistrationSchema,
-        image: list[UploadFile],
         session: AsyncSession = Depends(get_session_with_commit),
 ):
     lord_dao = LandLordsDAO(session)

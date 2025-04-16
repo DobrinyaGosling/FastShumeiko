@@ -1,4 +1,4 @@
-FROM python:3.13
+FROM python:3.13.2-slim
 
 RUN mkdir /booking
 
@@ -10,4 +10,6 @@ RUN pip install -r requirements.txt
 
 COPY . .
 
-CMD ["gunicorn", "app.main:app", "--workers", "2", "--worker-class", "uvicorn.workers.UvicornWorker", "--bind=0.0.0.0:8000]
+RUN chmod a+x /booking/docker/app.sh
+
+CMD ["gunicorn", "app.main:app", "--workers", "1", "--worker-class", "uvicorn.workers.UvicornWorker", "--bind=0.0.0.0:8000"]

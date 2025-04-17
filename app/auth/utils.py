@@ -49,14 +49,16 @@ def set_tokens(response: Response, user_id: int, role: str):
         key="access_token",
         value=access_token,
         httponly=True,
-        samesite="lax"
+        samesite="none",
+        secure=True,
     )
 
     response.set_cookie(
         key="refresh_token",
         value=refresh_token,
         httponly=True,
-        samesite="lax"
+        samesite="none",
+        secure=True,
     )
 
 

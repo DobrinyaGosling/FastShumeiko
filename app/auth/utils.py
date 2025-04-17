@@ -49,7 +49,6 @@ def set_tokens(response: Response, user_id: int, role: str):
         key="access_token",
         value=access_token,
         httponly=True,
-        secure=False,
         samesite="lax"
     )
 
@@ -57,7 +56,6 @@ def set_tokens(response: Response, user_id: int, role: str):
         key="refresh_token",
         value=refresh_token,
         httponly=True,
-        secure=False,
         samesite="lax"
     )
 

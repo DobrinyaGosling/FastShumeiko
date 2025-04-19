@@ -48,7 +48,7 @@ async def create_bookings(
     ))
 
     booking_dict = CreateBookingsSchema.model_validate(booking).model_dump()
-    msg_content = create_booking_confirmation_template(booking, user.email)
+    msg_content = create_booking_confirmation_template(booking_dict, user.email)
     with smtplib.SMTP_SSL(settings.SMTP_HOST, settings.SMTP_PORT) as server:
         server.login(settings.SMTP_USER, settings.SMTP_PASS)
         server.send_message(msg_content)

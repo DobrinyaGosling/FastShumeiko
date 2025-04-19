@@ -20,9 +20,10 @@ router = APIRouter(prefix="/users/auth", tags=["User Auth"])
 router2 = APIRouter(prefix="/lords/auth", tags=["Lord Auth"])
 router3 = APIRouter(prefix="/utils", tags=["Utils"])
 
+
 @router3.post("/role")
 def get_role(
-    access_token = Depends(get_access_token)
+        access_token=Depends(get_access_token)
 ):
     try:
         # Декодируем токен
@@ -40,15 +41,15 @@ def get_role(
     elif role == "lord":
         return {"role": "lord"}
 
-#------------------REGISTRATION---------------------------------------------------------------------------------
+
+# ------------------REGISTRATION---------------------------------------------------------------------------------
 
 @router.post("/registration")
 async def user_registration(
-    response: Response,
-    user: UserRegistrationSchema,
-    session: AsyncSession = Depends(get_session_with_commit),
-    ):
-
+        response: Response,
+        user: UserRegistrationSchema,
+        session: AsyncSession = Depends(get_session_with_commit),
+):
     user_dao = UsersDAO(session=session)
     existed_user = await user_dao.find_one_or_none(filters=EmailSchema(email=user.email))
     if existed_user:
@@ -75,6 +76,7 @@ async def upload_file(file: UploadFile):
     upload_dir = settings
 """
 
+
 @router2.post("/registration")
 async def lord_registration(
         response: Response,
@@ -92,7 +94,6 @@ async def lord_registration(
     if existed_hotel:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Hotel already exist")
 
-
     hotel = await hotel_dao.add(values=HotelsSchema(
         name=lord.hotel.name,
         location=lord.hotel.location,
@@ -104,30 +105,19 @@ async def lord_registration(
 
     await lord_dao.add(values=LandLordsAddSchema(email=lord.email, password=lord.password, hotels_id=hotel.id))
     await session.flush()
-    existed_lord= await LandLordsDAO(session).find_one_or_none(filters=EmailSchema(email=lord.email))
+    existed_lord = await LandLordsDAO(session).find_one_or_none(filters=EmailSchema(email=lord.email))
     tokens = set_tokens(response, existed_lord.id, role="lord")
     return tokens
 
 
-
-
-
-
-
-
-
-
-
-
-#-------------------LOGIN-------------------------------------------------------------------------------------------
+# -------------------LOGIN-------------------------------------------------------------------------------------------
 
 @router2.post("/login")
 async def lord_login(
-    lord: LandLordsSchema,
-    response: Response,
-    session: AsyncSession = Depends(get_session_without_commit)
+        lord: LandLordsSchema,
+        response: Response,
+        session: AsyncSession = Depends(get_session_without_commit)
 ):
-
     lord_dao = LandLordsDAO(session)
     existed_lord = await lord_dao.find_one_or_none(filters=EmailSchema(email=lord.email))
     if not existed_lord or verify_password(lord.password, existed_lord.password) is False:
@@ -139,10 +129,10 @@ async def lord_login(
 
 @router.post("/login")
 async def user_login(
-    user: UsersSchema,
-    response: Response,
-    session: AsyncSession = Depends(get_session_without_commit)
-    ):
+        user: UsersSchema,
+        response: Response,
+        session: AsyncSession = Depends(get_session_without_commit)
+):
     user_dao = UsersDAO(session=session)
     existed_user = await user_dao.find_one_or_none(filters=EmailSchema(email=user.email))
     if not existed_user or verify_password(user.password, existed_user.password) is False:
@@ -152,7 +142,7 @@ async def user_login(
     return tokens
 
 
-#---------------REFRESH---------------------------------------------------------------------------------------
+# ---------------REFRESH---------------------------------------------------------------------------------------
 
 @router.post("/refresh")
 async def refresh_user_tokens(
@@ -182,11 +172,10 @@ async def refresh_lord_tokens(
     return tokens
 
 
-#---------------LOGOUT------------------------------------------------------------------------------------------
+# ---------------LOGOUT------------------------------------------------------------------------------------------
 
 @router.post("/logout")
 async def logout(response: Response):
     response.delete_cookie("access_token")
     response.delete_cookie("refresh_token")
     return {"message": "U are successfully logout"}
-

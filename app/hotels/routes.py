@@ -69,7 +69,7 @@ async def get_hotels(
 
     redis_client.setex(
         cache_key,
-        timedelta(hours=1),
+        timedelta(minutes=1),
         json_last_10_hotels
     )
     return last_10_hotels

@@ -9,6 +9,9 @@ from app.DAO.dao import BookingsDAO, RoomsDAO
 from app.database import get_session_with_commit, get_session_without_commit
 from app.users.schemas import IdSchema
 from app.users.utils import get_existed_user_by_access_token
+from app.tasks.email_template import create_booking_confirmation_template
+import smtplib
+from app.config import settings
 
 router = APIRouter(prefix="/bookings", tags=["Bookings"])
 
@@ -36,13 +39,20 @@ async def create_bookings(
     if not existed_room:
         raise HTTPException(status_code=404, detail=f"Room with id {room_id} does not exist")
 
-    await BookingsDAO(session).add(values=CreateBookingsSchema(
+    booking = await BookingsDAO(session).add(values=CreateBookingsSchema(
         date_from=date_from,
         date_to=date_to,
         price=existed_room.price,
         room_id=room_id,
         user_id=user.id
     ))
+
+    booking_dict = CreateBookingsSchema.model_validate(booking).model_dump()
+    msg_content = create_booking_confirmation_template(booking, user.email)
+    with smtplib.SMTP_SSL(settings.SMTP_HOST, settings.SMTP_PORT) as server:
+        server.login(settings.SMTP_USER, settings.SMTP_PASS)
+        server.send_message(msg_content)
+
     return {"message": "U are successfully created booking:)"}
 
 

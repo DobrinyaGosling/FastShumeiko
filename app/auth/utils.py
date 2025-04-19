@@ -60,7 +60,7 @@ def set_tokens(response: Response, user_id: int, role: str):
         samesite="none",
         secure=True,
     )
-
+    return new_tokens
 
 def get_access_token(
         request: Request

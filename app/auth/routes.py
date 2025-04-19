@@ -58,8 +58,8 @@ async def user_registration(
     await session.flush()
 
     existed_user = await UsersDAO(session).find_one_or_none(filters=EmailSchema(email=user.email))
-    set_tokens(response, existed_user.id, role="user")
-    return {"message": "User successfully added"}
+    tokens = set_tokens(response, existed_user.id, role="user")
+    return tokens
 
 
 """
@@ -105,8 +105,8 @@ async def lord_registration(
     await lord_dao.add(values=LandLordsAddSchema(email=lord.email, password=lord.password, hotels_id=hotel.id))
     await session.flush()
     existed_lord= await LandLordsDAO(session).find_one_or_none(filters=EmailSchema(email=lord.email))
-    set_tokens(response, existed_lord.id, role="lord")
-    return {"message": "U are successfully added Lord ad Hotel"}
+    tokens = set_tokens(response, existed_lord.id, role="lord")
+    return tokens
 
 
 
@@ -133,8 +133,8 @@ async def lord_login(
     if not existed_lord or verify_password(lord.password, existed_lord.password) is False:
         raise HTTPException(status_code=404, detail="Incorrect email or password")
 
-    set_tokens(response, existed_lord.id, role="lord")
-    return {"message": "Successfully logged in:)"}
+    tokens = set_tokens(response, existed_lord.id, role="lord")
+    return tokens
 
 
 @router.post("/login")
@@ -148,8 +148,8 @@ async def user_login(
     if not existed_user or verify_password(user.password, existed_user.password) is False:
         raise HTTPException(status_code=404, detail="Incorrect email or password")
 
-    set_tokens(response, existed_user.id, role="user")
-    return {"U are successfully install tokens!!"}
+    tokens = set_tokens(response, existed_user.id, role="user")
+    return tokens
 
 
 #---------------REFRESH---------------------------------------------------------------------------------------
@@ -164,8 +164,8 @@ async def refresh_user_tokens(
     existed_user = await user_dao.find_one_or_none_by_id(data_id=user_id)
     if not existed_user:
         raise HTTPException(status_code=404, detail="User not found")
-    set_tokens(response=response, user_id=user_id, role="user")
-    return {"message": "U are successfully set tokens"}
+    tokens = set_tokens(response=response, user_id=user_id, role="user")
+    return tokens
 
 
 @router2.post("/refresh")
@@ -178,8 +178,8 @@ async def refresh_lord_tokens(
     existed_lord = await lord_dao.find_one_or_none_by_id(data_id=lord_id)
     if not existed_lord:
         raise HTTPException(status_code=404, detail="Lord not found")
-    set_tokens(response=response, user_id=lord_id, role="lord")
-    return {"message": "U are successfully set tokens"}
+    tokens = set_tokens(response=response, user_id=lord_id, role="lord")
+    return tokens
 
 
 #---------------LOGOUT------------------------------------------------------------------------------------------

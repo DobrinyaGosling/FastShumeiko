@@ -35,7 +35,6 @@ origins = [
     "http://0.0.0.0:3000",  # React/Vue dev server
     "http://localhost:3000",
     "http://localhost:5500",
-
 ]
 
 # Полная настройка CORS

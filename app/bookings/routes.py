@@ -12,6 +12,7 @@ from app.users.utils import get_existed_user_by_access_token
 from app.tasks.email_template import create_booking_confirmation_template
 import smtplib
 from app.config import settings
+from loguru import logger
 
 router = APIRouter(prefix="/bookings", tags=["Bookings"])
 
@@ -48,10 +49,14 @@ async def create_bookings(
     ))
 
     booking_dict = CreateBookingsSchema.model_validate(booking).model_dump()
+    logger.info("Формируем запрос к gmail")
     msg_content = create_booking_confirmation_template(booking_dict, user.email)
-    with smtplib.SMTP_SSL(settings.SMTP_HOST, settings.SMTP_PORT) as server:
-        server.login(settings.SMTP_USER, settings.SMTP_PASS)
-        server.send_message(msg_content)
+    try:
+        with smtplib.SMTP_SSL(settings.SMTP_HOST, settings.SMTP_PORT) as server:
+            server.login(settings.SMTP_USER, settings.SMTP_PASS)
+            server.send_message(msg_content)
+    except smtplib.SMTPException as e:
+        raise e
 
     return {"message": "U are successfully created booking:)"}
 

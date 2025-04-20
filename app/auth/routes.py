@@ -63,7 +63,6 @@ async def prod_user_registration(
     send_confirmation_registration_email.delay(email_to=email_to, code=code)
     logger.info("Таска отправлена")
 
-
     return user
 
 
@@ -76,7 +75,8 @@ async def prod_user_add_to_db(
 ):
     current_code = get_verify_code(user.email)
     if code != current_code:
-        raise HTTPException(status_code=406, detail="Коды не совпадают")
+        raise HTTPException(status_code=406, detail=f"Коды не совпадают, {current_code}")
+
     logger.info("Коды совпали")
 
     await UsersDAO(session).add(values=user)
@@ -84,7 +84,8 @@ async def prod_user_add_to_db(
 
     existed_user = await UsersDAO(session).find_one_or_none(filters=EmailSchema(email=user.email))
     tokens = set_tokens(response, existed_user.id, role="user")
-    return tokens.update(role="user")
+    tokens.update(role="user")
+    return tokens
 
 
 @router.post("/registration")

@@ -17,6 +17,7 @@ from app.users.schemas import EmailSchema as EmailSchema
 from app.users.schemas import UserRegistrationSchema, UsersSchema
 from app.auth.utils import set_verify_code, get_verify_code
 from app.tasks.tasks import send_confirmation_registration_email
+from loguru import logger
 
 router = APIRouter(prefix="/users/auth", tags=["User Auth"])
 router2 = APIRouter(prefix="/lords/auth", tags=["Lord Auth"])
@@ -58,7 +59,10 @@ async def prod_user_registration(
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="User already exist")
 
     code = set_verify_code(email_to)
-    send_confirmation_registration_email(email_to, code)
+    logger.info("Щя отправим")
+    send_confirmation_registration_email.delay(email_to=email_to, code=code)
+    logger.info("Таска отправлена")
+
 
     return user
 
@@ -73,6 +77,7 @@ async def prod_user_add_to_db(
     current_code = get_verify_code(user.email)
     if code != current_code:
         raise HTTPException(status_code=406, detail="Коды не совпадают")
+    logger.info("Коды совпали")
 
     await UsersDAO(session).add(values=user)
     await session.flush()

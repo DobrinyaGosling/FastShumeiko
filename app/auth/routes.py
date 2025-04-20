@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.utils import (get_access_token, get_lord_id_by_refresh_token,
                             get_user_id_by_refresh_token, set_tokens,
                             verify_password)
-from app.config import settings, redis_email_client
+from app.config import settings
 from app.DAO.dao import HotelsDAO, LandLordsDAO, UsersDAO
 from app.database import get_session_with_commit, get_session_without_commit
 from app.hotels.schemas import (HotelsSchema, LandLordsAddSchema,
@@ -15,8 +15,8 @@ from app.hotels.schemas import (HotelsSchema, LandLordsAddSchema,
                                 StrSchema)
 from app.users.schemas import EmailSchema as EmailSchema
 from app.users.schemas import UserRegistrationSchema, UsersSchema
-from app.auth.utils import generate_random_string, send_verification_email, set_verify_code
-
+from app.auth.utils import set_verify_code, get_verify_code
+from app.tasks.tasks import send_confirmation_registration_email
 
 router = APIRouter(prefix="/users/auth", tags=["User Auth"])
 router2 = APIRouter(prefix="/lords/auth", tags=["Lord Auth"])
@@ -46,32 +46,41 @@ def get_role(
 
 # ------------------REGISTRATION---------------------------------------------------------------------------------
 
-"""
-@router.post("/verify-email")
-async def verify_email(
-        email_to: str,  # Чёткое название параметра
+@router.post("/prod-registration")
+async def prod_user_registration(
+        user: UserRegistrationSchema,
+        session: AsyncSession = Depends(get_session_without_commit),
+):
+    email_to = user.email
+    user_dao = UsersDAO(session=session)
+    existed_user = await user_dao.find_one_or_none(filters=EmailSchema(email=email_to))
+    if existed_user:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="User already exist")
+
+    code = set_verify_code(email_to)
+    send_confirmation_registration_email(email_to, code)
+
+    return user
+
+
+@router.post("prod-add-to-db")
+async def prod_user_add_to_db(
+        response: Response,
+        user: UserRegistrationSchema,
         code: str,
         session: AsyncSession = Depends(get_session_with_commit)
 ):
-    stored_code = verification_codes.get(email_to)
+    current_code = get_verify_code(user.email)
+    if code != current_code:
+        raise HTTPException(status_code=406, detail="Коды не совпадают")
 
-    if not stored_code or stored_code != code:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid verification code"
-        )
+    await UsersDAO(session).add(values=user)
+    await session.flush()
 
-    # Пометить email как верифицированный
-    user_dao = UsersDAO(session)
-    await user_dao.update(
-        filters=EmailSchema(email=email_to_verify),
-        values={"email_verified": True}
-    )
+    existed_user = await UsersDAO(session).find_one_or_none(filters=EmailSchema(email=user.email))
+    tokens = set_tokens(response, existed_user.id, role="user")
+    return tokens.update(role="user")
 
-    # Удалить использованный код
-    del verification_codes[email_to_verify]
-
-    return {"message": "Email verified successfully"}
 
 @router.post("/registration")
 async def user_registration(
@@ -84,40 +93,12 @@ async def user_registration(
     if existed_user:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="User already exist")
 
-    code = set_verify_code(str(user.email))
-    try:
-        # Отправка email в основном потоке
-        await send_verification_email(email_to=str(user.email), code=code)
-        return {"message": "Verification code sent successfully"}
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to send verification email: {str(e)}"
-        )
-
-
-
     await user_dao.add(values=user)
     await session.flush()
 
     existed_user = await UsersDAO(session).find_one_or_none(filters=EmailSchema(email=user.email))
     tokens = set_tokens(response, existed_user.id, role="user")
     return tokens
-
-
-"""
-"""
-@router.post("/upload_file")
-async def upload_file(file: UploadFile):
-    try:
-        file_content = await file.read()
-
-    max_file_size = 5 * 1024 * 1024  # 5 МБ в байтах
-    if len(file_content) > max_file_size:
-        raise HTTPException(status_code=413, detail="Превышен максимальный размер файла (5 МБ).")
-
-    upload_dir = settings
-"""
 
 
 @router2.post("/registration")

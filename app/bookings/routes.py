@@ -13,7 +13,7 @@ from app.tasks.email_template import create_booking_confirmation_template
 import smtplib
 from app.config import settings
 from loguru import logger
-from app.tasks.tasks import send_booking_confirmation_email
+from app.tasks.tasks import send_booking_email
 
 router = APIRouter(prefix="/bookings", tags=["Bookings"])
 
@@ -50,7 +50,7 @@ async def create_bookings(
     ))
 
     booking_dict = CreateBookingsSchema.model_validate(booking).model_dump()
-    send_booking_confirmation_email.delay(booking_dict, user.email)
+    send_booking_email.delay(booking_dict, user.email)
     return {"message": "U are successfully created booking:)"}
 
 

@@ -10,11 +10,12 @@ from passlib.context import CryptContext
 import smtplib
 from email.message import EmailMessage
 import string
+from pydantic import EmailStr
 
 from app.config import settings, redis_email_client
 
-def set_verify_code(email_to: str):
-    code = generate_random_string(length=4)
+def set_verify_code(email_to: EmailStr):
+    code = generate_random_string()
     redis_email_client.setex(
         email_to,
         timedelta(minutes=10),
@@ -22,23 +23,12 @@ def set_verify_code(email_to: str):
     )
     return code
 
-async def send_verification_email(email_to: str, code: str):
-    """Синхронная отправка email с обёрткой в async для совместимости"""
-    msg = EmailMessage()
-    msg.set_content(f"Ваш код: {code}")
-
-    msg["Subject"] = "Email Верификация"
-    msg["From"] = settings.SMTP_USER
-    msg["To"] = email_to
-
-    # Используем блок with для автоматического закрытия соединения
-    with smtplib.SMTP_SSL(settings.SMTP_HOST, settings.SMTP_PORT) as server:
-        server.login(settings.SMTP_USER, settings.SMTP_PASS)
-        server.send_message(msg)
+def get_verify_code(email_to: EmailStr):
+    return redis_email_client.get(email_to)
 
 
-def generate_random_string(length: int) -> str:
-    return ''.join(choices(string.ascii_letters, k=length))
+def generate_random_string() -> str:
+    return ''.join(choices(string.ascii_letters, k=4))
 
 
 def create_tokens(data: dict) -> dict:

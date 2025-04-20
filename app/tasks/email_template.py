@@ -20,3 +20,22 @@ def create_booking_confirmation_template(
         subtype="html"
     )
     return email
+
+
+async def create_registration_confirmation_email(email_to: EmailStr, code: str):
+    """Синхронная отправка email с обёрткой в async для совместимости"""
+    email = EmailMessage()
+
+    email["Subject"] = "Email Верификация"
+    email["From"] = settings.SMTP_USER
+    email["To"] = email_to
+
+    email.set_content(
+        f"""
+              <h1>Подтверждение Почты<h1>
+              <h2>Ваш код: {code}<h2>
+          """,
+        subtype="html"
+    )
+
+    return email

@@ -41,5 +41,5 @@ class Settings(BaseSettings):
 
 settings = Settings()
 
-redis_client = redis.from_url(settings.get_redis_cache_url())
-redis_email_client = redis.from_url(settings.get_redis_back_url())
+redis_client = redis.from_url(settings.get_redis_cache_url(), decode_responses=True)
+redis_email_client = redis.from_url(settings.get_redis_back_url(), decode_responses=True)

@@ -16,7 +16,7 @@ def create_booking_confirmation_template(
   f"""
             <h1>Подтверждение брони<h1>
             Вы забронировали отель с {booking["date_from"]} по {booking["date_to"]}
-            <h2>пошел нахуй)<h2>
+            <h2>Пошел нахуй)<h2>
         """,
         subtype="html"
     )

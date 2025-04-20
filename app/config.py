@@ -9,11 +9,20 @@ class Settings(BaseSettings):
     DB_USER: str
     DB_PASS: str
     DB_NAME: str
+
     SECRET_KEY: str
     ALGORITHM: str
+
     REDIS_HOST: str
     REDIS_PORT: str
+
+    SMTP_HOST: str
+    SMTP_PORT: int
+    SMTP_USER: str
+    SMTP_PASS: str
+
     BASE_DIR: str = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))  # Корневая директория проекта
+
 
     model_config = SettingsConfigDict(env_file=f"{BASE_DIR}/.env-prod", extra="allow")
 

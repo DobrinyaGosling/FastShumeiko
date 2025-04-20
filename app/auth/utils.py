@@ -2,13 +2,39 @@ import string
 from datetime import datetime, timedelta, timezone
 from random import choices
 
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, status
 from fastapi.requests import Request
 from fastapi.responses import Response
 from jose import JWTError, jwt
 from passlib.context import CryptContext
+import smtplib
+from email.message import EmailMessage
+import string
 
-from app.config import settings
+from app.config import settings, redis_email_client
+
+def set_verify_code(email_to: str):
+    code = generate_random_string(length=4)
+    redis_email_client.setex(
+        email_to,
+        timedelta(minutes=10),
+        code
+    )
+    return code
+
+async def send_verification_email(email_to: str, code: str):
+    """Синхронная отправка email с обёрткой в async для совместимости"""
+    msg = EmailMessage()
+    msg.set_content(f"Ваш код: {code}")
+
+    msg["Subject"] = "Email Верификация"
+    msg["From"] = settings.SMTP_USER
+    msg["To"] = email_to
+
+    # Используем блок with для автоматического закрытия соединения
+    with smtplib.SMTP_SSL(settings.SMTP_HOST, settings.SMTP_PORT) as server:
+        server.login(settings.SMTP_USER, settings.SMTP_PASS)
+        server.send_message(msg)
 
 
 def generate_random_string(length: int) -> str:
@@ -61,6 +87,7 @@ def set_tokens(response: Response, user_id: int, role: str):
         secure=True,
     )
     return new_tokens
+
 
 def get_access_token(
         request: Request

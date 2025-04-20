@@ -1,12 +1,13 @@
 from fastapi import (APIRouter, Depends, HTTPException, Response, UploadFile,
                      status)
 from jose import JWTError, jwt
+from pydantic import EmailStr
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.utils import (get_access_token, get_lord_id_by_refresh_token,
                             get_user_id_by_refresh_token, set_tokens,
                             verify_password)
-from app.config import settings
+from app.config import settings, redis_email_client
 from app.DAO.dao import HotelsDAO, LandLordsDAO, UsersDAO
 from app.database import get_session_with_commit, get_session_without_commit
 from app.hotels.schemas import (HotelsSchema, LandLordsAddSchema,
@@ -14,7 +15,8 @@ from app.hotels.schemas import (HotelsSchema, LandLordsAddSchema,
                                 StrSchema)
 from app.users.schemas import EmailSchema as EmailSchema
 from app.users.schemas import UserRegistrationSchema, UsersSchema
-from fastapi import UploadFile, Form
+from app.auth.utils import generate_random_string, send_verification_email, set_verify_code
+
 
 router = APIRouter(prefix="/users/auth", tags=["User Auth"])
 router2 = APIRouter(prefix="/lords/auth", tags=["Lord Auth"])
@@ -44,6 +46,33 @@ def get_role(
 
 # ------------------REGISTRATION---------------------------------------------------------------------------------
 
+"""
+@router.post("/verify-email")
+async def verify_email(
+        email_to: str,  # Чёткое название параметра
+        code: str,
+        session: AsyncSession = Depends(get_session_with_commit)
+):
+    stored_code = verification_codes.get(email_to)
+
+    if not stored_code or stored_code != code:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid verification code"
+        )
+
+    # Пометить email как верифицированный
+    user_dao = UsersDAO(session)
+    await user_dao.update(
+        filters=EmailSchema(email=email_to_verify),
+        values={"email_verified": True}
+    )
+
+    # Удалить использованный код
+    del verification_codes[email_to_verify]
+
+    return {"message": "Email verified successfully"}
+
 @router.post("/registration")
 async def user_registration(
         response: Response,
@@ -55,6 +84,19 @@ async def user_registration(
     if existed_user:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="User already exist")
 
+    code = set_verify_code(str(user.email))
+    try:
+        # Отправка email в основном потоке
+        await send_verification_email(email_to=str(user.email), code=code)
+        return {"message": "Verification code sent successfully"}
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to send verification email: {str(e)}"
+        )
+
+
+
     await user_dao.add(values=user)
     await session.flush()
 
@@ -63,6 +105,7 @@ async def user_registration(
     return tokens
 
 
+"""
 """
 @router.post("/upload_file")
 async def upload_file(file: UploadFile):

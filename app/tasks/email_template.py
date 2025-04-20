@@ -22,7 +22,7 @@ def create_booking_confirmation_template(
     return email
 
 
-async def create_registration_confirmation_email(email_to: EmailStr, code: str):
+def create_registration_confirmation_email(email_to: EmailStr, code: str):
     """Синхронная отправка email с обёрткой в async для совместимости"""
     email = EmailMessage()
 

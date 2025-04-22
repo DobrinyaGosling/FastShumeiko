@@ -49,10 +49,10 @@ def get_role(
 
 @router.post("/prod-registration")
 async def prod_user_registration(
-        user: UserRegistrationSchema,
+        email: EmailStr,
         session: AsyncSession = Depends(get_session_without_commit),
 ):
-    email_to = user.email
+    email_to = email
     user_dao = UsersDAO(session=session)
     existed_user = await user_dao.find_one_or_none(filters=EmailSchema(email=email_to))
     if existed_user:
@@ -63,10 +63,10 @@ async def prod_user_registration(
     send_confirmation_registration_email.delay(email_to=email_to, code=code)
     logger.info("Таска отправлена")
 
-    return user
+    return email
 
 
-@router.post("prod-add-to-db")
+@router.post("/prod-add-to-db")
 async def prod_user_add_to_db(
         response: Response,
         user: UserRegistrationSchema,

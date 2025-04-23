@@ -6,3 +6,4 @@ celery = Celery(
     broker=settings.get_redis_cache_url(),
     include=["app.tasks.tasks"]
 )
+celery.conf.timezone = 'Europe/Moscow'

@@ -1,10 +1,17 @@
-from app.tasks.config import celery
 import smtplib
-from app.config import settings
-from pydantic import EmailStr
-from app.tasks.email_template import create_booking_confirmation_template
-from app.tasks.email_template import create_registration_confirmation_email
 
+import gspread.exceptions
+from loguru import logger
+from pydantic import EmailStr
+
+from app.config import settings
+from app.tasks.config import celery
+from app.shit.config import SUBJECTS, PROD_TABLE_URL, TEST_TABLE_URL, get_client, get_table_by_url
+from app.tasks.email_template import create_registration_confirmation_email, create_booking_confirmation_template
+from datetime import datetime
+import pytz
+
+table_url = TEST_TABLE_URL
 
 @celery.task
 def send_booking_email(
@@ -35,3 +42,34 @@ def send_confirmation_registration_email(
             server.send_message(msg_content)
     except Exception as e:
         print(str(e))
+
+@celery.task(bind=True)
+def join_the_queue(self, subject: str):
+    try:
+        print(f"Starting task for subject: {subject}")  # Добавьте это
+        subject_dict = SUBJECTS[subject]
+        worksheet_title = subject_dict['sheet']
+        print(worksheet_title)
+        client = get_client()
+        table = get_table_by_url(client, table_url)
+        worksheet = table.worksheet(worksheet_title)
+
+        values = [["идите нахуй"] for _ in range(subject_dict.get('range'))]
+        worksheet.update(range_name=subject_dict['cells'], values=values)
+
+        self.update_state(state='PROGRESS')
+        values2 = [[""] for _ in range(subject_dict['range'])]
+        worksheet.update(range_name=subject_dict['cells'], values=values2)
+
+        worksheet.update(range_name=subject_dict['cell_dima'], values=[[1]])
+        worksheet.update(range_name=subject_dict['cell_roma'], values=[[3]])
+
+        return {
+            "status": "completed",
+            "subject": subject,
+            "executed_at": datetime.now(pytz.timezone('Europe/Moscow')).isoformat()
+        }
+
+    except gspread.exceptions.GSpreadException as e:
+        print(f"Error in task: {str(e)}")  # Логируем все ошибки
+        self.retry(exc=e, countdown=30)

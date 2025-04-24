@@ -21,6 +21,12 @@ class Settings(BaseSettings):
     SMTP_USER: str
     SMTP_PASS: str
 
+    CLIENT_ID: str
+    CLIENT_SECRET: str
+
+    TEST_TABLE_URL: str
+    PROD_TABLE_URL: str
+
     BASE_DIR: str = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))  # Корневая директория проекта
 
 

@@ -23,3 +23,9 @@ def join_the_queue(subject: str):
     worksheet.update(range_name=subject_dict['cells'], values=values2)
     worksheet.update(range_name=subject_dict['cell_dima'], values=[[1]])
     worksheet.update(range_name=subject_dict['cell_roma'], values=[[3]])
+
+client = get_client()
+worksheets = get_table_by_url(client, table_url).worksheets()
+for shit in worksheets:
+    shit.clear()
+

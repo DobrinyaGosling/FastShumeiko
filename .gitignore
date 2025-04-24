@@ -1,2 +1,4 @@
 .env
 .env_not_dev
+app/shit/creds.json
+app/shit/client_secret.json

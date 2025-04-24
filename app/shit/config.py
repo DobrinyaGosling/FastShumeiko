@@ -8,16 +8,15 @@ from oauth2client.tools import argparser, run_flow
 from app.config import settings
 
 # Настройки OAuth (замени значения из Google Cloud)
-CLIENT_ID = "272980548040-ndu90nhpsjvo76o56eh6ck03up8a7r48.apps.googleusercontent.com"
-CLIENT_SECRET = "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"
+CLIENT_ID = settings.CLIENT_ID
+CLIENT_SECRET = settings.CLIENT_SECRET
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets",
           'https://www.googleapis.com/auth/drive'
           ]
 REDIRECT_URI = "urn:ietf:wg:oauth:2.0:oob"  # Для десктопных приложений
 
-TEST_TABLE_URL = 'https://docs.google.com/spreadsheets/d/1Ts95QhcRr3kuVyzotC-qwL1olh0uxBfeBSIoFzNMfzI'
-PROD_TABLE_URL = 'https://docs.google.com/spreadsheets/d/1zvU72eiCYvRIuwqPoVfdUTtuf3KBXuevqTHpAHUOf3Y'
-
+TEST_TABLE_URL = settings.TEST_TABLE_URL
+PROD_TABLE_URL = settings.PROD_TABLE_URL
 SUBJECTS = {
     "ОАиП": {"sheet": "ОАиП", "cell_dima": "I28", "cell_roma": "I27", "cells": "I3:I33", "range": 31},
     "ОАиП подгруппа": {"sheet": "ОАиП", "cell_dima": "I50", "cell_roma": "I49", "cells": "I38:I53", "range": 16},

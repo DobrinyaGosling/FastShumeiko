@@ -12,4 +12,4 @@ COPY . .
 
 RUN chmod a+x /booking/docker/app.sh
 
-CMD bash -c "gunicorn app.main:app --workers 1 --worker-class uvicorn.workers.UvicornWorker --bind=0.0.0.0:8000 & celery -A app.tasks.config:celery worker --loglevel=info & celery -A app.tasks.config:celery worker flower --loglevel=info"
+CMD bash -c "gunicorn app.main:app --workers 1 --worker-class uvicorn.workers.UvicornWorker --bind=0.0.0.0:8000 & celery -A app.tasks.config:celery worker --loglevel=info"

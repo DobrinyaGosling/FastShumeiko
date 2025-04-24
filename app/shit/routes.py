@@ -4,6 +4,10 @@ from datetime import time, datetime, timedelta
 from app.shit.config import SUBJECTS
 from app.tasks.tasks import join_the_queue
 import pytz
+from redis import Redis
+from app.config import settings
+import json
+
 
 router = APIRouter(prefix='/shit', tags=['Sheet'])
 
@@ -61,3 +65,30 @@ async def do_the_shiiit(
         "subject": subject.value,
         "lesson": lesson.value
     }
+
+@router.get("/")
+async def get_tasks():
+    broker = Redis.from_url(settings.get_redis_broker_url())
+    result = {}
+
+    for task_id, task_data_str in broker.hgetall('unacked').items():
+        try:
+            # Парсим строку как JSON (она внутри ещё строки)
+            task_list = json.loads(task_data_str)
+
+            # Первый элемент списка - словарь с данными задачи
+            task_dict = task_list[0]
+
+            # Достаём headers и из них берём eta
+            eta_str = task_dict['headers']['eta']
+
+            # Конвертируем строку времени в datetime объект
+            eta_time = datetime.fromisoformat(eta_str)
+
+            # Сохраняем в результат
+            result[task_id] = eta_time.time().isoformat()
+
+        except (json.JSONDecodeError, KeyError, ValueError) as e:
+            result[task_id] = f"Error parsing task: {str(e)}"
+
+    return result

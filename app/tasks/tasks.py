@@ -61,9 +61,8 @@ def join_the_queue(self, subject: str):
         values2 = [[""] for _ in range(subject_dict['range'])]
         worksheet.update(range_name=subject_dict['cells'], values=values2)
 
-        worksheet.update(range_name=subject_dict['cell_dima'], values=[[6]])
+        worksheet.update(range_name=subject_dict['cell_dima'], values=[[1]])
         worksheet.update(range_name=subject_dict['cell_roma'], values=[[3]])
-        worksheet.update(range_name=subject_dict['cell_ilua'], values=[[4]])
 
         return {
             "status": "completed",

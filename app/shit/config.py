@@ -18,11 +18,11 @@ REDIRECT_URI = "urn:ietf:wg:oauth:2.0:oob"  # Для десктопных при
 TEST_TABLE_URL = settings.TEST_TABLE_URL
 PROD_TABLE_URL = settings.PROD_TABLE_URL
 SUBJECTS = {
-    "ОАиП": {"sheet": "ОАиП", "cell_dima": "I28", "cell_roma": "I27", "cells": "I3:I33", "range": 31},
-    "ОАиП подгруппа": {"sheet": "ОАиП", "cell_dima": "I50", "cell_roma": "I49", "cells": "I38:I53", "range": 16},
-    "ПиОИвИС": {"sheet": "ПиОИвИС", "cell_dima": "G28", "cell_roma": "G27", "cells": "G3:G33", "range": 31},
-    "ПиОИвИС подгруппа": {"sheet": "ПиОИвИС", "cell_dima": "G50", "cell_roma": "G49", "cells": "G38:G53", "range": 16},
-    "ПиОИвИС пз": {"sheet": "ПЗ ПиОИвИС", "cell_dima": "E28", "cell_roma": "E27", "cells": "E3:E32", "range": 30},
+    "ОАиП": {"sheet": "ОАиП", "cell_ilua": "I18", "cell_dima": "I28", "cell_roma": "I27", "cells": "I3:I33", "range": 31},
+    "ОАиП подгруппа": {"sheet": "ОАиП", "cell_ilua": "I46", "cell_dima": "I50", "cell_roma": "I49", "cells": "I38:I53", "range": 16},
+    "ПиОИвИС": {"sheet": "ПиОИвИС", "cell_ilua": "G18", "cell_dima": "G28", "cell_roma": "G27", "cells": "G3:G33", "range": 31},
+    "ПиОИвИС подгруппа": {"sheet": "ПиОИвИС", "cell_ilua": "I46", "cell_dima": "G50", "cell_roma": "G49", "cells": "G38:G53", "range": 16},
+    "ПиОИвИС пз": {"sheet": "ПЗ ПиОИвИС", "cell_ilua": "E18", "cell_dima": "E28", "cell_roma": "E27", "cells": "E3:E32", "range": 30},
 }
 
 CREDS_PATH = os.path.join(settings.BASE_DIR, "app", "shit", "creds.json")

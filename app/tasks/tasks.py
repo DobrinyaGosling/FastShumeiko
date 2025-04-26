@@ -11,7 +11,7 @@ from app.tasks.email_template import create_registration_confirmation_email, cre
 from datetime import datetime
 import pytz
 
-table_url = PROD_TABLE_URL
+table_url = TEST_TABLE_URL
 
 @celery.task
 def send_booking_email(

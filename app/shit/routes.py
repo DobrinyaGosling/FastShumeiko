@@ -48,7 +48,7 @@ async def do_the_shiiit(
     lesson: Pair,
     password: str
 ):
-    if password != '1':
+    if password != 'kazdep':
         return "Пшёл нахуй"
 
     eta = lesson.get_execution_time()

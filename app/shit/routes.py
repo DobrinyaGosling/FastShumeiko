@@ -66,29 +66,25 @@ async def do_the_shiiit(
         "lesson": lesson.value
     }
 
+
 @router.get("/")
-async def get_tasks():
+async def get_scheduled_tasks():
+    """Возвращает все запланированные задачи из Redis"""
     broker = Redis.from_url(settings.get_redis_broker_url())
-    result = {}
+    tasks = {}
 
-    for task_id, task_data_str in broker.hgetall('unacked').items():
+    # Получаем все задачи из unacked-очереди
+    unacked_tasks = broker.hgetall('unacked')
+
+    for task_id, task_data_str in unacked_tasks.items():
         try:
-            # Парсим строку как JSON (она внутри ещё строки)
-            task_list = json.loads(task_data_str)
+            # Преобразуем строку в Python-объект
+            task_data = json.loads(task_data_str)
+            tasks[task_id.decode()] = task_data
+        except json.JSONDecodeError:
+            tasks[task_id.decode()] = {"error": "Invalid JSON data"}
 
-            # Первый элемент списка - словарь с данными задачи
-            task_dict = task_list[0]
-
-            # Достаём headers и из них берём eta
-            eta_str = task_dict['headers']['eta']
-
-            # Конвертируем строку времени в datetime объект
-            eta_time = datetime.fromisoformat(eta_str)
-
-            # Сохраняем в результат
-            result[task_id] = eta_time.time().isoformat()
-
-        except (json.JSONDecodeError, KeyError, ValueError) as e:
-            result[task_id] = f"Error parsing task: {str(e)}"
-
-    return result
+    return {
+        "count": len(tasks),
+        "tasks": tasks
+    }
